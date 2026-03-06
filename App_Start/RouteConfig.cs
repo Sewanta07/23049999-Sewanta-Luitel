@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Web;
 using System.Web.Routing;
-using Microsoft.AspNet.FriendlyUrls;
 
 namespace _23049999_Sewanta_Luitel
 {
@@ -10,9 +6,7 @@ namespace _23049999_Sewanta_Luitel
     {
         public static void RegisterRoutes(RouteCollection routes)
         {
-            var settings = new FriendlyUrlSettings();
-            settings.AutoRedirectMode = RedirectMode.Permanent;
-            routes.EnableFriendlyUrls(settings);
+            // No custom routes are required for this project currently.
         }
     }
 }

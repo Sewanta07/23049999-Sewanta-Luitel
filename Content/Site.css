@@ -1,21 +1,161 @@
-﻿/* Wrapping element */
-/* Set some basic padding to keep content from hitting the edges */
-.body-content {
-    margin-top: 15px;
-    padding-left: 15px;
-    padding-right: 15px;
+﻿:root {
+    --app-bg: #f4f7fb;
+    --panel-bg: #ffffff;
+    --panel-border: #d9e2ec;
+    --ink-main: #1f2933;
+    --ink-muted: #52606d;
+    --brand: #0f4c81;
+    --brand-strong: #0b3a61;
+    --accent: #ffb454;
+    --radius: 14px;
+    --shadow-soft: 0 10px 30px rgba(15, 76, 129, 0.08);
 }
 
-/* Set widths on the form inputs since otherwise they're 100% wide */
+body {
+    font-family: "Poppins", "Trebuchet MS", Tahoma, sans-serif;
+    color: var(--ink-main);
+    background:
+        radial-gradient(1200px circle at 0% 0%, rgba(15, 76, 129, 0.13), transparent 48%),
+        radial-gradient(900px circle at 100% 0%, rgba(255, 180, 84, 0.16), transparent 40%),
+        var(--app-bg);
+}
+
+.navbar {
+    background: linear-gradient(90deg, #0b2f4a 0%, #0f4c81 60%, #14649f 100%) !important;
+    box-shadow: 0 6px 20px rgba(11, 47, 74, 0.26);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.4px;
+}
+
+.nav-link {
+    font-weight: 500;
+}
+
+.body-content {
+    margin-top: 24px;
+    margin-bottom: 28px;
+}
+
+main {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    padding: 24px;
+}
+
+h2 {
+    font-weight: 700;
+    color: var(--brand-strong);
+    letter-spacing: 0.2px;
+    margin-top: 28px;
+    margin-bottom: 16px;
+    border-left: 5px solid var(--accent);
+    padding-left: 12px;
+}
+
+h2:first-child {
+    margin-top: 0;
+}
+
+h4 {
+    margin-top: 20px;
+    font-weight: 600;
+    color: var(--ink-main);
+}
+
+.form-group {
+    margin-bottom: 14px;
+}
+
+.form-group label {
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--ink-muted);
+}
+
 input,
 select,
-textarea {
-    max-width: 280px;
+textarea,
+.form-control {
+    max-width: 100%;
+    border-radius: 10px;
+    border: 1px solid #cfd8e3;
+    min-height: 40px;
 }
 
-/* Responsive: Portrait tablets and up */
-@media screen and (min-width: 768px) {
+.btn {
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 8px 16px;
+}
+
+.btn + .btn {
+    margin-left: 8px;
+}
+
+.table {
+    margin-top: 12px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table > tbody > tr > th,
+.table > tbody > tr > td,
+.table > tfoot > tr > th,
+.table > tfoot > tr > td,
+.table > thead > tr > th,
+.table > thead > tr > td {
+    padding: 10px 12px;
+    vertical-align: middle;
+}
+
+.table > thead > tr > th {
+    background-color: #eef5fc;
+    color: #102a43;
+    border-bottom: 2px solid #d9e2ec;
+}
+
+.card {
+    border: 1px solid #d9e2ec;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(16, 42, 67, 0.08);
+}
+
+.card-title {
+    color: #486581;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.h4 {
+    color: #102a43;
+    font-weight: 700;
+}
+
+footer {
+    color: #627d98;
+}
+
+@media screen and (max-width: 768px) {
     .body-content {
-        padding: 0;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    main {
+        padding: 16px;
+    }
+
+    .btn {
+        width: 100%;
+        margin-top: 8px;
+    }
+
+    .btn + .btn {
+        margin-left: 0;
     }
 }

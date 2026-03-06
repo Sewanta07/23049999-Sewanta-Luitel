@@ -6,13 +6,13 @@
 <head runat="server">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%: Page.Title %> - My ASP.NET Application</title>
+    <title><%: Page.Title %> - Cinema Ticket System</title>
 
     <asp:PlaceHolder runat="server">
         <%: Scripts.Render("~/bundles/modernizr") %>
     </asp:PlaceHolder>
 
-    <webopt:bundlereference runat="server" path="~/Content/css" />
+    <link href="~/Content/styles.css" rel="stylesheet" type="text/css" />
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 
 </head>
@@ -37,34 +37,84 @@
             </Scripts>
         </asp:ScriptManager>
 
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
-            <div class="container">
-                <a class="navbar-brand" runat="server" href="~/">Application name</a>
-                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Toggle navigation" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/About">About</a></li>
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/Contact">Contact</a></li>
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/Report">Report</a></li>
-                    </ul>
+        <div class="admin-layout" id="adminLayout">
+            <aside class="sidebar" id="sidebarNav">
+                <div class="sidebar-title">Admin Panel</div>
+                <nav class="sidebar-menu">
+                    <a class="menu-item" runat="server" href="~/Pages/Home.aspx">Dashboard</a>
+                    <a class="menu-item" runat="server" href="~/Users/Users.aspx">Users</a>
+                    <a class="menu-item" runat="server" href="~/Movies/Movies.aspx">Movies</a>
+                    <a class="menu-item" runat="server" href="~/Theaters/Theaters.aspx">Theaters</a>
+                    <a class="menu-item" runat="server" href="~/Shows/Shows.aspx">Shows</a>
+                    <a class="menu-item" runat="server" href="~/Tickets/Tickets.aspx">Bookings</a>
+                    <a class="menu-item" runat="server" href="~/Tickets/Tickets.aspx">Tickets</a>
+                    <a class="menu-item" runat="server" href="~/Reports/UserTicketReport.aspx">Reports</a>
+                </nav>
+            </aside>
+
+            <div class="main-wrap">
+                <header class="top-header">
+                    <button type="button" id="sidebarToggle" class="toggle-btn" aria-label="Toggle Navigation">Menu</button>
+                    <div class="system-title">Movie Ticket Booking System</div>
+                </header>
+
+                <main class="content-area">
+                    <asp:ContentPlaceHolder ID="MainContent" runat="server">
+                    </asp:ContentPlaceHolder>
+                    <footer class="footer">
+                        <p>&copy; <%: DateTime.Now.Year %> - Cinema Ticket System</p>
+                    </footer>
+                </main>
                 </div>
             </div>
-        </nav>
-        <div class="container body-content">
-            <asp:ContentPlaceHolder ID="MainContent" runat="server">
-            </asp:ContentPlaceHolder>
-            <hr />
-            <footer>
-                <p>&copy; <%: DateTime.Now.Year %> - My ASP.NET Application</p>
-            </footer>
         </div>
     </form>
-    <asp:PlaceHolder runat="server">
-        <%: Scripts.Render("~/Scripts/bootstrap.js") %>
-    </asp:PlaceHolder>
+
+    <script type="text/javascript">
+        (function () {
+            var toggle = document.getElementById("sidebarToggle");
+            var layout = document.getElementById("adminLayout");
+            var currentPath = (window.location.pathname || "").toLowerCase();
+            var menuLinks = document.querySelectorAll(".sidebar-menu .menu-item");
+
+            if (toggle && layout) {
+                toggle.addEventListener("click", function () {
+                    if (layout.classList.contains("sidebar-open")) {
+                        layout.classList.remove("sidebar-open");
+                    } else {
+                        layout.classList.add("sidebar-open");
+                    }
+                });
+            }
+
+            if (menuLinks && menuLinks.length > 0) {
+                for (var i = 0; i < menuLinks.length; i++) {
+                    var link = menuLinks[i];
+                    var href = (link.getAttribute("href") || "").toLowerCase();
+
+                    if (!href) {
+                        continue;
+                    }
+
+                    // Use path segment matching so highlighting works under virtual directories.
+                    if (currentPath.indexOf("/users/") >= 0 && href.indexOf("/users/") >= 0) {
+                        link.classList.add("active");
+                    } else if (currentPath.indexOf("/movies/") >= 0 && href.indexOf("/movies/") >= 0) {
+                        link.classList.add("active");
+                    } else if (currentPath.indexOf("/theaters/") >= 0 && href.indexOf("/theaters/") >= 0) {
+                        link.classList.add("active");
+                    } else if (currentPath.indexOf("/shows/") >= 0 && href.indexOf("/shows/") >= 0) {
+                        link.classList.add("active");
+                    } else if (currentPath.indexOf("/tickets/") >= 0 && href.indexOf("/tickets/") >= 0) {
+                        link.classList.add("active");
+                    } else if (currentPath.indexOf("/reports/") >= 0 && href.indexOf("/reports/") >= 0) {
+                        link.classList.add("active");
+                    } else if (currentPath.indexOf("/pages/home") >= 0 && href.indexOf("/pages/home") >= 0) {
+                        link.classList.add("active");
+                    }
+                }
+            }
+        })();
+    </script>
 </body>
 </html>
