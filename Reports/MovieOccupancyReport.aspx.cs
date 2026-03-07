@@ -10,16 +10,24 @@ namespace _23049999_Sewanta_Luitel
     {
         protected DropDownList ddlMovies;
         protected GridView GridViewReport;
+        protected Label lblMessage;
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
-                ddlMovies.DataSource = new DBConnection().ExecuteQuery("SELECT Movie_Id, Movie_Name FROM MOVIE ORDER BY Movie_Name");
-                ddlMovies.DataTextField = "Movie_Name";
-                ddlMovies.DataValueField = "Movie_Id";
-                ddlMovies.DataBind();
-                ddlMovies.Items.Insert(0, new ListItem("All Movies", ""));
+                try
+                {
+                    ddlMovies.DataSource = new DBConnection().ExecuteQuery("SELECT Movie_Id, Movie_Name FROM MOVIE ORDER BY Movie_Name");
+                    ddlMovies.DataTextField = "Movie_Name";
+                    ddlMovies.DataValueField = "Movie_Id";
+                    ddlMovies.DataBind();
+                    ddlMovies.Items.Insert(0, new ListItem("All Movies", ""));
+                }
+                catch
+                {
+                    SetMessage("Unable to load movies for report.", true);
+                }
             }
         }
 
@@ -52,9 +60,23 @@ namespace _23049999_Sewanta_Luitel
 
             query += " GROUP BY m.Movie_Name ORDER BY m.Movie_Name";
 
-            DataTable dt = new DBConnection().ExecuteQuery(query, p);
-            GridViewReport.DataSource = dt;
-            GridViewReport.DataBind();
+            try
+            {
+                DataTable dt = new DBConnection().ExecuteQuery(query, p);
+                GridViewReport.DataSource = dt;
+                GridViewReport.DataBind();
+            }
+            catch
+            {
+                SetMessage("Unable to load report data.", true);
+            }
+        }
+
+        private void SetMessage(string message, bool isError)
+        {
+            lblMessage.Text = message;
+            lblMessage.Visible = true;
+            lblMessage.CssClass = isError ? "alert alert-error" : "alert alert-success";
         }
     }
 }

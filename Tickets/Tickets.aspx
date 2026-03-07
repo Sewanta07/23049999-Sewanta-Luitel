@@ -3,6 +3,7 @@
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <main class="app-shell">
         <h2>Tickets</h2>
+        <asp:Label ID="lblMessage" runat="server" Visible="false" />
         <p>
             <asp:Button ID="btnBook" runat="server" Text="Book Ticket" CssClass="btn btn-update" PostBackUrl="~/Tickets/TicketForm.aspx" />
             <asp:Button ID="btnCancelBooking" runat="server" Text="Cancel Selected Booking" CssClass="btn btn-delete" OnClick="btnCancelBooking_Click" />

@@ -4,6 +4,7 @@
     <main class="form-page">
         <section class="form-card">
             <h2>Book Ticket</h2>
+            <asp:Label ID="lblMessage" runat="server" Visible="false" />
             <div class="form-grid">
                 <div class="form-group"><label for="ddlUsers">User</label><asp:DropDownList ID="ddlUsers" runat="server" CssClass="form-control" /></div>
                 <div class="form-group"><label for="ddlShows">Show</label><asp:DropDownList ID="ddlShows" runat="server" CssClass="form-control" /></div>

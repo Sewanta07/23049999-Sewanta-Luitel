@@ -4,9 +4,10 @@
     <main class="form-page">
         <section class="form-card">
             <h2>Movie Form</h2>
+            <asp:Label ID="lblMessage" runat="server" Visible="false" />
             <div class="form-grid">
                 <div class="form-group"><label for="txtMovieName">Movie Name</label><asp:TextBox ID="txtMovieName" runat="server" CssClass="form-control" /></div>
-                <div class="form-group"><label for="txtReleaseDate">Release Date</label><asp:TextBox ID="txtReleaseDate" runat="server" CssClass="form-control" /></div>
+                <div class="form-group"><label for="txtReleaseDate">Release Date</label><asp:TextBox ID="txtReleaseDate" runat="server" CssClass="form-control" TextMode="Date" /></div>
             </div>
             <div class="form-actions">
                 <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-save" OnClick="btnSave_Click" />

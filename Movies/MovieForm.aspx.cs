@@ -11,6 +11,7 @@ namespace _23049999_Sewanta_Luitel
     {
         protected TextBox txtMovieName;
         protected TextBox txtReleaseDate;
+        protected Label lblMessage;
 
         private int? MovieId
         {
@@ -25,96 +26,115 @@ namespace _23049999_Sewanta_Luitel
         {
             if (!IsPostBack && MovieId.HasValue)
             {
-                Dictionary<string, object> p = new Dictionary<string, object> { { ":Movie_Id", MovieId.Value } };
-                DataTable dt = new DBConnection().ExecuteQuery("SELECT Movie_Name, Movie_Release_Date FROM MOVIE WHERE Movie_Id = :Movie_Id", p);
-                if (dt.Rows.Count > 0)
+                try
                 {
-                    txtMovieName.Text = dt.Rows[0]["Movie_Name"].ToString();
-                    txtReleaseDate.Text = Convert.ToDateTime(dt.Rows[0]["Movie_Release_Date"]).ToString("yyyy-MM-dd");
+                    Dictionary<string, object> p = new Dictionary<string, object> { { ":Movie_Id", MovieId.Value } };
+                    DataTable dt = new DBConnection().ExecuteQuery("SELECT Movie_Name, Movie_Release_Date FROM MOVIE WHERE Movie_Id = :Movie_Id", p);
+                    if (dt.Rows.Count > 0)
+                    {
+                        txtMovieName.Text = dt.Rows[0]["Movie_Name"].ToString();
+                        txtReleaseDate.Text = Convert.ToDateTime(dt.Rows[0]["Movie_Release_Date"]).ToString("yyyy-MM-dd");
+                    }
+                }
+                catch
+                {
+                    SetMessage("Unable to load movie details.", true);
                 }
             }
         }
 
         protected void btnSave_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(txtMovieName.Text) || string.IsNullOrWhiteSpace(txtReleaseDate.Text))
+            {
+                SetMessage("Movie name and release date are required.", true);
+                return;
+            }
+
             DateTime releaseDate;
             if (!DateTime.TryParse(txtReleaseDate.Text.Trim(), out releaseDate))
             {
-                throw new InvalidOperationException("Please enter a valid release date.");
+                SetMessage("Please enter a valid release date.", true);
+                return;
             }
 
-            using (OracleConnection con = new DBConnection().GetConnection())
-            using (OracleCommand cmd = con.CreateCommand())
+            try
             {
-                if (MovieId.HasValue)
+                using (OracleConnection con = new DBConnection().GetConnection())
+                using (OracleCommand cmd = con.CreateCommand())
                 {
-                    cmd.CommandText = "UPDATE MOVIE SET Movie_Name=:Movie_Name, Movie_Release_Date=:Movie_Release_Date WHERE Movie_Id=:Movie_Id";
-                    cmd.Parameters.Add(":Movie_Id", OracleDbType.Int32).Value = MovieId.Value;
-                }
-                else
-                {
-                    cmd.CommandText = "INSERT INTO MOVIE (Movie_Id, Movie_Name, Movie_Release_Date) VALUES ((SELECT NVL(MAX(Movie_Id),0)+1 FROM MOVIE), :Movie_Name, :Movie_Release_Date)";
+                    cmd.BindByName = true;
+
+                    if (MovieId.HasValue)
+                    {
+                        cmd.CommandText = "UPDATE MOVIE SET Movie_Name=:Movie_Name, Movie_Release_Date=:Movie_Release_Date WHERE Movie_Id=:Movie_Id";
+                        cmd.Parameters.Add(":Movie_Id", OracleDbType.Int32).Value = MovieId.Value;
+                    }
+                    else
+                    {
+                        cmd.CommandText = "INSERT INTO MOVIE (Movie_Id, Movie_Name, Movie_Release_Date) VALUES ((SELECT NVL(MAX(Movie_Id),0)+1 FROM MOVIE), :Movie_Name, :Movie_Release_Date)";
+                    }
+
+                    cmd.Parameters.Add(":Movie_Name", OracleDbType.Varchar2).Value = txtMovieName.Text.Trim();
+                    cmd.Parameters.Add(":Movie_Release_Date", OracleDbType.Date).Value = releaseDate;
+                    cmd.ExecuteNonQuery();
                 }
 
-                cmd.Parameters.Add(":Movie_Name", OracleDbType.Varchar2).Value = txtMovieName.Text.Trim();
-                cmd.Parameters.Add(":Movie_Release_Date", OracleDbType.Date).Value = releaseDate;
-                cmd.ExecuteNonQuery();
+                Response.Redirect("~/Movies/Movies.aspx");
             }
-
-            Response.Redirect("~/Movies/Movies.aspx");
+            catch
+            {
+                SetMessage("Unable to save movie.", true);
+            }
         }
 
         protected void btnDelete_Click(object sender, EventArgs e)
         {
             if (!MovieId.HasValue)
             {
+                SetMessage("Open an existing movie to delete.", true);
                 return;
             }
 
-            using (OracleConnection con = new DBConnection().GetConnection())
-            using (OracleTransaction tran = con.BeginTransaction())
+            try
             {
-                try
+                using (OracleConnection con = new DBConnection().GetConnection())
                 {
-                    // Remove child records first to satisfy FK constraints.
-                    ExecuteDelete(con, tran,
-                        "DELETE FROM TICKET WHERE Booking_Id IN (SELECT b.Booking_Id FROM BOOKING b INNER JOIN SHOWS s ON b.Show_Id = s.Show_Id WHERE s.Movie_Id = :Movie_Id)",
-                        MovieId.Value);
+                    using (OracleCommand checkCmd = con.CreateCommand())
+                    {
+                        checkCmd.BindByName = true;
+                        checkCmd.CommandText = "SELECT COUNT(*) FROM SHOWS WHERE Movie_Id = :Movie_Id";
+                        checkCmd.Parameters.Add(":Movie_Id", OracleDbType.Int32).Value = MovieId.Value;
+                        int dependentCount = Convert.ToInt32(checkCmd.ExecuteScalar());
+                        if (dependentCount > 0)
+                        {
+                            SetMessage("Cannot delete movie because related shows exist.", true);
+                            return;
+                        }
+                    }
 
-                    ExecuteDelete(con, tran,
-                        "DELETE FROM BOOKING WHERE Show_Id IN (SELECT Show_Id FROM SHOWS WHERE Movie_Id = :Movie_Id)",
-                        MovieId.Value);
-
-                    ExecuteDelete(con, tran,
-                        "DELETE FROM SHOWS WHERE Movie_Id = :Movie_Id",
-                        MovieId.Value);
-
-                    ExecuteDelete(con, tran,
-                        "DELETE FROM MOVIE WHERE Movie_Id = :Movie_Id",
-                        MovieId.Value);
-
-                    tran.Commit();
+                    using (OracleCommand cmd = con.CreateCommand())
+                    {
+                        cmd.BindByName = true;
+                        cmd.CommandText = "DELETE FROM MOVIE WHERE Movie_Id = :Movie_Id";
+                        cmd.Parameters.Add(":Movie_Id", OracleDbType.Int32).Value = MovieId.Value;
+                        cmd.ExecuteNonQuery();
+                    }
                 }
-                catch
-                {
-                    tran.Rollback();
-                    throw;
-                }
+
+                Response.Redirect("~/Movies/Movies.aspx");
             }
-
-            Response.Redirect("~/Movies/Movies.aspx");
+            catch
+            {
+                SetMessage("Unable to delete movie.", true);
+            }
         }
 
-        private static void ExecuteDelete(OracleConnection con, OracleTransaction tran, string sql, int movieId)
+        private void SetMessage(string message, bool isError)
         {
-            using (OracleCommand cmd = con.CreateCommand())
-            {
-                cmd.Transaction = tran;
-                cmd.BindByName = true;
-                cmd.CommandText = sql;
-                cmd.Parameters.Add(":Movie_Id", OracleDbType.Int32).Value = movieId;
-                cmd.ExecuteNonQuery();
-            }
+            lblMessage.Text = message;
+            lblMessage.Visible = true;
+            lblMessage.CssClass = isError ? "alert alert-error" : "alert alert-success";
         }
     }
 }

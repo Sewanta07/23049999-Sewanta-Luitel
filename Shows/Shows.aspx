@@ -3,6 +3,7 @@
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <main class="app-shell">
         <h2>Shows</h2>
+        <asp:Label ID="lblMessage" runat="server" Visible="false" />
         <p><asp:Button ID="btnAddShow" runat="server" Text="Add New Show" CssClass="btn btn-update" PostBackUrl="~/Shows/ShowForm.aspx" /></p>
         <div class="table-wrap">
             <asp:GridView ID="GridViewShows" runat="server" AutoGenerateColumns="False" DataKeyNames="Show_Id" CssClass="table table-bordered" OnRowDeleting="GridViewShows_RowDeleting">

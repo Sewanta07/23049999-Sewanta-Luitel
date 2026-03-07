@@ -13,18 +13,26 @@ namespace _23049999_Sewanta_Luitel
         protected Label lblTotalShows;
         protected Label lblTotalTicketsBooked;
         protected GridView GridViewRecentBookings;
+        protected Label lblMessage;
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
-                lblTotalUsers.Text = GetCount("SELECT COUNT(*) TOTAL_COUNT FROM USER_TABLE").ToString();
-                lblTotalMovies.Text = GetCount("SELECT COUNT(*) TOTAL_COUNT FROM MOVIE").ToString();
-                lblTotalTheaters.Text = GetCount("SELECT COUNT(*) TOTAL_COUNT FROM THEATER").ToString();
-                lblTotalShows.Text = GetCount("SELECT COUNT(*) TOTAL_COUNT FROM SHOWS").ToString();
-                lblTotalTicketsBooked.Text = GetCount("SELECT COUNT(*) TOTAL_COUNT FROM TICKET").ToString();
+                try
+                {
+                    lblTotalUsers.Text = GetCount("SELECT COUNT(*) TOTAL_COUNT FROM USER_TABLE").ToString();
+                    lblTotalMovies.Text = GetCount("SELECT COUNT(*) TOTAL_COUNT FROM MOVIE").ToString();
+                    lblTotalTheaters.Text = GetCount("SELECT COUNT(*) TOTAL_COUNT FROM THEATER").ToString();
+                    lblTotalShows.Text = GetCount("SELECT COUNT(*) TOTAL_COUNT FROM SHOWS").ToString();
+                    lblTotalTicketsBooked.Text = GetCount("SELECT COUNT(*) TOTAL_COUNT FROM TICKET").ToString();
 
-                LoadRecentBookings();
+                    LoadRecentBookings();
+                }
+                catch
+                {
+                    SetMessage("Unable to load dashboard data.", true);
+                }
             }
         }
 
@@ -54,6 +62,13 @@ namespace _23049999_Sewanta_Luitel
 
             GridViewRecentBookings.DataSource = new DBConnection().ExecuteQuery(query);
             GridViewRecentBookings.DataBind();
+        }
+
+        private void SetMessage(string message, bool isError)
+        {
+            lblMessage.Text = message;
+            lblMessage.Visible = true;
+            lblMessage.CssClass = isError ? "alert alert-error" : "alert alert-success";
         }
     }
 }

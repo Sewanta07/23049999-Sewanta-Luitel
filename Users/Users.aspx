@@ -3,6 +3,7 @@
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <main class="app-shell">
         <h2>Users</h2>
+        <asp:Label ID="lblMessage" runat="server" Visible="false" />
         <p><asp:Button ID="btnAddUser" runat="server" Text="Add New User" CssClass="btn btn-update" PostBackUrl="~/Users/UserForm.aspx" /></p>
         <div class="table-wrap">
             <asp:GridView ID="GridViewUsers" runat="server" AutoGenerateColumns="False" DataKeyNames="User_Id" CssClass="table table-bordered" OnRowDeleting="GridViewUsers_RowDeleting">

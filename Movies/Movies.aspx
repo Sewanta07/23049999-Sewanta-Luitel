@@ -3,6 +3,7 @@
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <main class="app-shell">
         <h2>Movies</h2>
+        <asp:Label ID="lblMessage" runat="server" Visible="false" />
         <p><asp:Button ID="btnAddMovie" runat="server" Text="Add New Movie" CssClass="btn btn-update" PostBackUrl="~/Movies/MovieForm.aspx" /></p>
         <div class="table-wrap">
             <asp:GridView ID="GridViewMovies" runat="server" AutoGenerateColumns="False" DataKeyNames="Movie_Id" CssClass="table table-bordered" OnRowDeleting="GridViewMovies_RowDeleting">

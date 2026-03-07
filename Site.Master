@@ -45,10 +45,12 @@
                     <a class="menu-item" runat="server" href="~/Users/Users.aspx">Users</a>
                     <a class="menu-item" runat="server" href="~/Movies/Movies.aspx">Movies</a>
                     <a class="menu-item" runat="server" href="~/Theaters/Theaters.aspx">Theaters</a>
+                    <a class="menu-item" runat="server" href="~/Halls/Halls.aspx">Halls</a>
                     <a class="menu-item" runat="server" href="~/Shows/Shows.aspx">Shows</a>
-                    <a class="menu-item" runat="server" href="~/Tickets/Tickets.aspx">Bookings</a>
                     <a class="menu-item" runat="server" href="~/Tickets/Tickets.aspx">Tickets</a>
-                    <a class="menu-item" runat="server" href="~/Reports/UserTicketReport.aspx">Reports</a>
+                    <a class="menu-item" runat="server" href="~/Reports/Reports.aspx">Reports</a>
+                    <a class="menu-item" runat="server" href="~/About.aspx">About</a>
+                    <a class="menu-item" runat="server" href="~/Contact.aspx">Contact</a>
                 </nav>
             </aside>
 
@@ -101,6 +103,8 @@
                         link.classList.add("active");
                     } else if (currentPath.indexOf("/movies/") >= 0 && href.indexOf("/movies/") >= 0) {
                         link.classList.add("active");
+                    } else if (currentPath.indexOf("/halls/") >= 0 && href.indexOf("/halls/") >= 0) {
+                        link.classList.add("active");
                     } else if (currentPath.indexOf("/theaters/") >= 0 && href.indexOf("/theaters/") >= 0) {
                         link.classList.add("active");
                     } else if (currentPath.indexOf("/shows/") >= 0 && href.indexOf("/shows/") >= 0) {
@@ -110,6 +114,10 @@
                     } else if (currentPath.indexOf("/reports/") >= 0 && href.indexOf("/reports/") >= 0) {
                         link.classList.add("active");
                     } else if (currentPath.indexOf("/pages/home") >= 0 && href.indexOf("/pages/home") >= 0) {
+                        link.classList.add("active");
+                    } else if (currentPath.indexOf("/about.aspx") >= 0 && href.indexOf("/about.aspx") >= 0) {
+                        link.classList.add("active");
+                    } else if (currentPath.indexOf("/contact.aspx") >= 0 && href.indexOf("/contact.aspx") >= 0) {
                         link.classList.add("active");
                     }
                 }

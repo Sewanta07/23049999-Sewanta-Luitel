@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
 
@@ -7,7 +8,19 @@ namespace _23049999_Sewanta_Luitel
 {
     public class DBConnection
     {
-        private const string ConnectionString = "User Id=system;Password=oracle;Data Source=127.0.0.1:1522/XEPDB1;";
+        private static string ConnectionString
+        {
+            get
+            {
+                ConnectionStringSettings settings = ConfigurationManager.ConnectionStrings["MovieTicketDb"];
+                if (settings == null || string.IsNullOrWhiteSpace(settings.ConnectionString))
+                {
+                    throw new InvalidOperationException("Database connection string 'MovieTicketDb' is missing in Web.config.");
+                }
+
+                return settings.ConnectionString;
+            }
+        }
 
         public OracleConnection GetConnection()
         {
@@ -32,23 +45,32 @@ namespace _23049999_Sewanta_Luitel
 
         public DataTable ExecuteQuery(string query, IDictionary<string, object> parameters = null)
         {
-            using (OracleConnection connection = GetConnection())
-            using (OracleCommand command = new OracleCommand(query, connection))
+            try
             {
-                if (parameters != null)
+                using (OracleConnection connection = GetConnection())
+                using (OracleCommand command = new OracleCommand(query, connection))
                 {
-                    foreach (KeyValuePair<string, object> parameter in parameters)
+                    command.BindByName = true;
+
+                    if (parameters != null)
                     {
-                        command.Parameters.Add(parameter.Key, parameter.Value ?? DBNull.Value);
+                        foreach (KeyValuePair<string, object> parameter in parameters)
+                        {
+                            command.Parameters.Add(parameter.Key, parameter.Value ?? DBNull.Value);
+                        }
+                    }
+
+                    using (OracleDataAdapter adapter = new OracleDataAdapter(command))
+                    {
+                        DataTable resultTable = new DataTable();
+                        adapter.Fill(resultTable);
+                        return resultTable;
                     }
                 }
-
-                using (OracleDataAdapter adapter = new OracleDataAdapter(command))
-                {
-                    DataTable resultTable = new DataTable();
-                    adapter.Fill(resultTable);
-                    return resultTable;
-                }
+            }
+            catch (OracleException ex)
+            {
+                throw new InvalidOperationException("A database error occurred while retrieving data.", ex);
             }
         }
     }

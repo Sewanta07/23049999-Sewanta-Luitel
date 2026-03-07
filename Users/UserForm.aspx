@@ -4,6 +4,7 @@
     <main class="form-page">
         <section class="form-card">
             <h2>User Form</h2>
+            <asp:Label ID="lblMessage" runat="server" Visible="false" />
             <div class="form-grid">
                 <div class="form-group"><label for="txtName">Name</label><asp:TextBox ID="txtName" runat="server" CssClass="form-control" /></div>
                 <div class="form-group"><label for="txtEmail">Email</label><asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" /></div>

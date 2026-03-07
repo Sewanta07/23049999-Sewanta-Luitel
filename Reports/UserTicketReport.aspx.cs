@@ -12,16 +12,24 @@ namespace _23049999_Sewanta_Luitel
         protected TextBox txtFromDate;
         protected TextBox txtToDate;
         protected GridView GridViewReport;
+        protected Label lblMessage;
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
-                ddlUsers.DataSource = new DBConnection().ExecuteQuery("SELECT User_Id, User_Name || ' (ID: ' || User_Id || ')' AS User_Display FROM USER_TABLE ORDER BY User_Name");
-                ddlUsers.DataTextField = "User_Display";
-                ddlUsers.DataValueField = "User_Id";
-                ddlUsers.DataBind();
-                ddlUsers.Items.Insert(0, new ListItem("All Users", ""));
+                try
+                {
+                    ddlUsers.DataSource = new DBConnection().ExecuteQuery("SELECT User_Id, User_Name || ' (ID: ' || User_Id || ')' AS User_Display FROM USER_TABLE ORDER BY User_Name");
+                    ddlUsers.DataTextField = "User_Display";
+                    ddlUsers.DataValueField = "User_Id";
+                    ddlUsers.DataBind();
+                    ddlUsers.Items.Insert(0, new ListItem("All Users", ""));
+                }
+                catch
+                {
+                    SetMessage("Unable to load users for report.", true);
+                }
             }
         }
 
@@ -65,9 +73,23 @@ namespace _23049999_Sewanta_Luitel
 
             query += " ORDER BY b.Booking_Date DESC";
 
-            DataTable dt = new DBConnection().ExecuteQuery(query, p);
-            GridViewReport.DataSource = dt;
-            GridViewReport.DataBind();
+            try
+            {
+                DataTable dt = new DBConnection().ExecuteQuery(query, p);
+                GridViewReport.DataSource = dt;
+                GridViewReport.DataBind();
+            }
+            catch
+            {
+                SetMessage("Unable to load report data.", true);
+            }
+        }
+
+        private void SetMessage(string message, bool isError)
+        {
+            lblMessage.Text = message;
+            lblMessage.Visible = true;
+            lblMessage.CssClass = isError ? "alert alert-error" : "alert alert-success";
         }
     }
 }

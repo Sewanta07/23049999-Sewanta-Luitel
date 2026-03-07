@@ -11,8 +11,7 @@ namespace _23049999_Sewanta_Luitel
     {
         protected TextBox txtTheaterName;
         protected TextBox txtTheaterCity;
-        protected TextBox txtHallNumber;
-        protected TextBox txtHallCapacity;
+        protected Label lblMessage;
 
         private int? TheaterId
         {
@@ -27,219 +26,108 @@ namespace _23049999_Sewanta_Luitel
         {
             if (!IsPostBack && TheaterId.HasValue)
             {
-                Dictionary<string, object> p = new Dictionary<string, object> { { ":Theater_Id", TheaterId.Value } };
-                DataTable dt = new DBConnection().ExecuteQuery("SELECT Theater_Name, Theater_City FROM THEATER WHERE Theater_Id = :Theater_Id", p);
-                if (dt.Rows.Count > 0)
+                try
                 {
-                    txtTheaterName.Text = dt.Rows[0]["Theater_Name"].ToString();
-                    txtTheaterCity.Text = dt.Rows[0]["Theater_City"].ToString();
+                    Dictionary<string, object> p = new Dictionary<string, object> { { ":Theater_Id", TheaterId.Value } };
+                    DataTable dt = new DBConnection().ExecuteQuery("SELECT Theater_Name, Theater_City FROM THEATER WHERE Theater_Id = :Theater_Id", p);
+                    if (dt.Rows.Count > 0)
+                    {
+                        txtTheaterName.Text = dt.Rows[0]["Theater_Name"].ToString();
+                        txtTheaterCity.Text = dt.Rows[0]["Theater_City"].ToString();
+                    }
                 }
-
-                DataTable hallDt = new DBConnection().ExecuteQuery("SELECT Hall_Number, Hall_Capacity FROM HALL WHERE Theater_Id = :Theater_Id ORDER BY Hall_Id", p);
-                if (hallDt.Rows.Count > 0)
+                catch
                 {
-                    txtHallNumber.Text = hallDt.Rows[0]["Hall_Number"].ToString();
-                    txtHallCapacity.Text = hallDt.Rows[0]["Hall_Capacity"].ToString();
+                    SetMessage("Unable to load theater details.", true);
                 }
             }
         }
 
         protected void btnSave_Click(object sender, EventArgs e)
         {
-            int hallCapacity = 0;
-            bool hasHallNumber = !string.IsNullOrWhiteSpace(txtHallNumber.Text);
-            bool hasHallCapacity = !string.IsNullOrWhiteSpace(txtHallCapacity.Text);
-
-            if (hasHallCapacity && !int.TryParse(txtHallCapacity.Text.Trim(), out hallCapacity))
+            if (string.IsNullOrWhiteSpace(txtTheaterName.Text) || string.IsNullOrWhiteSpace(txtTheaterCity.Text))
             {
-                throw new InvalidOperationException("Please enter a valid hall capacity.");
+                SetMessage("Theater name and city are required.", true);
+                return;
             }
 
-            using (OracleConnection con = new DBConnection().GetConnection())
-            using (OracleTransaction tran = con.BeginTransaction())
+            try
             {
-                try
+                using (OracleConnection con = new DBConnection().GetConnection())
+                using (OracleCommand cmd = con.CreateCommand())
                 {
-                    int theaterId;
+                    cmd.BindByName = true;
 
                     if (TheaterId.HasValue)
                     {
-                        theaterId = TheaterId.Value;
-                        using (OracleCommand cmd = con.CreateCommand())
-                        {
-                            cmd.Transaction = tran;
-                            cmd.CommandText = "UPDATE THEATER SET Theater_Name=:Theater_Name, Theater_City=:Theater_City WHERE Theater_Id=:Theater_Id";
-                            cmd.Parameters.Add(":Theater_Name", OracleDbType.Varchar2).Value = txtTheaterName.Text.Trim();
-                            cmd.Parameters.Add(":Theater_City", OracleDbType.Varchar2).Value = txtTheaterCity.Text.Trim();
-                            cmd.Parameters.Add(":Theater_Id", OracleDbType.Int32).Value = theaterId;
-                            cmd.ExecuteNonQuery();
-                        }
+                        cmd.CommandText = "UPDATE THEATER SET Theater_Name=:Theater_Name, Theater_City=:Theater_City WHERE Theater_Id=:Theater_Id";
+                        cmd.Parameters.Add(":Theater_Id", OracleDbType.Int32).Value = TheaterId.Value;
                     }
                     else
                     {
-                        using (OracleCommand cmd = con.CreateCommand())
-                        {
-                            cmd.Transaction = tran;
-                            cmd.CommandText = "SELECT NVL(MAX(Theater_Id),0)+1 FROM THEATER";
-                            theaterId = Convert.ToInt32(cmd.ExecuteScalar());
-                        }
-
-                        using (OracleCommand cmd = con.CreateCommand())
-                        {
-                            cmd.Transaction = tran;
-                            cmd.CommandText = "INSERT INTO THEATER (Theater_Id, Theater_Name, Theater_City) VALUES (:Theater_Id, :Theater_Name, :Theater_City)";
-                            cmd.Parameters.Add(":Theater_Id", OracleDbType.Int32).Value = theaterId;
-                            cmd.Parameters.Add(":Theater_Name", OracleDbType.Varchar2).Value = txtTheaterName.Text.Trim();
-                            cmd.Parameters.Add(":Theater_City", OracleDbType.Varchar2).Value = txtTheaterCity.Text.Trim();
-                            cmd.ExecuteNonQuery();
-                        }
+                        cmd.CommandText = "INSERT INTO THEATER (Theater_Id, Theater_Name, Theater_City) VALUES ((SELECT NVL(MAX(Theater_Id),0)+1 FROM THEATER), :Theater_Name, :Theater_City)";
                     }
 
-                    if (hasHallNumber || hasHallCapacity)
-                    {
-                        int? hallId = null;
-                        using (OracleCommand cmd = con.CreateCommand())
-                        {
-                            cmd.Transaction = tran;
-                            cmd.CommandText = "SELECT MIN(Hall_Id) FROM HALL WHERE Theater_Id = :Theater_Id";
-                            cmd.Parameters.Add(":Theater_Id", OracleDbType.Int32).Value = theaterId;
-                            object result = cmd.ExecuteScalar();
-                            if (result != DBNull.Value && result != null)
-                            {
-                                hallId = Convert.ToInt32(result);
-                            }
-                        }
-
-                        if (hallId.HasValue)
-                        {
-                            using (OracleCommand cmd = con.CreateCommand())
-                            {
-                                cmd.Transaction = tran;
-                                cmd.CommandText = "UPDATE HALL SET Hall_Number=:Hall_Number, Hall_Capacity=:Hall_Capacity WHERE Hall_Id=:Hall_Id";
-                                cmd.Parameters.Add(":Hall_Number", OracleDbType.Varchar2).Value = txtHallNumber.Text.Trim();
-                                cmd.Parameters.Add(":Hall_Capacity", OracleDbType.Int32).Value = hasHallCapacity ? hallCapacity : 0;
-                                cmd.Parameters.Add(":Hall_Id", OracleDbType.Int32).Value = hallId.Value;
-                                cmd.ExecuteNonQuery();
-                            }
-                        }
-                        else
-                        {
-                            int newHallId;
-                            using (OracleCommand cmd = con.CreateCommand())
-                            {
-                                cmd.Transaction = tran;
-                                cmd.CommandText = "SELECT NVL(MAX(Hall_Id),0)+1 FROM HALL";
-                                newHallId = Convert.ToInt32(cmd.ExecuteScalar());
-                            }
-
-                            using (OracleCommand cmd = con.CreateCommand())
-                            {
-                                cmd.Transaction = tran;
-                                cmd.CommandText = "INSERT INTO HALL (Hall_Id, Theater_Id, Hall_Number, Hall_Capacity) VALUES (:Hall_Id, :Theater_Id, :Hall_Number, :Hall_Capacity)";
-                                cmd.Parameters.Add(":Hall_Id", OracleDbType.Int32).Value = newHallId;
-                                cmd.Parameters.Add(":Theater_Id", OracleDbType.Int32).Value = theaterId;
-                                cmd.Parameters.Add(":Hall_Number", OracleDbType.Varchar2).Value = txtHallNumber.Text.Trim();
-                                cmd.Parameters.Add(":Hall_Capacity", OracleDbType.Int32).Value = hasHallCapacity ? hallCapacity : 0;
-                                cmd.ExecuteNonQuery();
-                            }
-                        }
-                    }
-
-                    tran.Commit();
+                    cmd.Parameters.Add(":Theater_Name", OracleDbType.Varchar2).Value = txtTheaterName.Text.Trim();
+                    cmd.Parameters.Add(":Theater_City", OracleDbType.Varchar2).Value = txtTheaterCity.Text.Trim();
+                    cmd.ExecuteNonQuery();
                 }
-                catch
-                {
-                    tran.Rollback();
-                    throw;
-                }
+
+                Response.Redirect("~/Theaters/Theaters.aspx");
             }
-
-            Response.Redirect("~/Theaters/Theaters.aspx");
+            catch
+            {
+                SetMessage("Unable to save theater.", true);
+            }
         }
 
         protected void btnDelete_Click(object sender, EventArgs e)
         {
             if (!TheaterId.HasValue)
             {
+                SetMessage("Open an existing theater to delete.", true);
                 return;
             }
 
-            using (OracleConnection con = new DBConnection().GetConnection())
-            using (OracleTransaction tran = con.BeginTransaction())
+            try
             {
-                try
+                using (OracleConnection con = new DBConnection().GetConnection())
                 {
-                    // Remove child records first to satisfy FK constraints.
-                    ExecuteDelete(con, tran,
-                        "DELETE FROM TICKET WHERE Booking_Id IN (SELECT b.Booking_Id FROM BOOKING b INNER JOIN SHOWS s ON b.Show_Id = s.Show_Id INNER JOIN HALL h ON s.Hall_Id = h.Hall_Id WHERE h.Theater_Id = :Theater_Id)",
-                        TheaterId.Value);
-
-                    ExecuteDelete(con, tran,
-                        "DELETE FROM BOOKING WHERE Show_Id IN (SELECT s.Show_Id FROM SHOWS s INNER JOIN HALL h ON s.Hall_Id = h.Hall_Id WHERE h.Theater_Id = :Theater_Id)",
-                        TheaterId.Value);
-
-                    ExecuteDelete(con, tran,
-                        "DELETE FROM SHOWS WHERE Hall_Id IN (SELECT Hall_Id FROM HALL WHERE Theater_Id = :Theater_Id)",
-                        TheaterId.Value);
-
-                    // Support environments where show table name is SHOW instead of SHOWS.
-                    if (TableExists(con, tran, "SHOW"))
+                    using (OracleCommand checkCmd = con.CreateCommand())
                     {
-                        ExecuteDelete(con, tran,
-                            "DELETE FROM TICKET WHERE Booking_Id IN (SELECT b.Booking_Id FROM BOOKING b INNER JOIN \"SHOW\" s ON b.Show_Id = s.Show_Id INNER JOIN HALL h ON s.Hall_Id = h.Hall_Id WHERE h.Theater_Id = :Theater_Id)",
-                            TheaterId.Value);
-
-                        ExecuteDelete(con, tran,
-                            "DELETE FROM BOOKING WHERE Show_Id IN (SELECT s.Show_Id FROM \"SHOW\" s INNER JOIN HALL h ON s.Hall_Id = h.Hall_Id WHERE h.Theater_Id = :Theater_Id)",
-                            TheaterId.Value);
-
-                        ExecuteDelete(con, tran,
-                            "DELETE FROM \"SHOW\" WHERE Hall_Id IN (SELECT Hall_Id FROM HALL WHERE Theater_Id = :Theater_Id)",
-                            TheaterId.Value);
+                        checkCmd.BindByName = true;
+                        checkCmd.CommandText = "SELECT COUNT(*) FROM HALL WHERE Theater_Id = :Theater_Id";
+                        checkCmd.Parameters.Add(":Theater_Id", OracleDbType.Int32).Value = TheaterId.Value;
+                        int dependentCount = Convert.ToInt32(checkCmd.ExecuteScalar());
+                        if (dependentCount > 0)
+                        {
+                            SetMessage("Cannot delete theater because related halls exist. Delete halls first.", true);
+                            return;
+                        }
                     }
 
-                    ExecuteDelete(con, tran,
-                        "DELETE FROM HALL WHERE Theater_Id = :Theater_Id",
-                        TheaterId.Value);
-
-                    ExecuteDelete(con, tran,
-                        "DELETE FROM THEATER WHERE Theater_Id = :Theater_Id",
-                        TheaterId.Value);
-
-                    tran.Commit();
+                    using (OracleCommand cmd = con.CreateCommand())
+                    {
+                        cmd.BindByName = true;
+                        cmd.CommandText = "DELETE FROM THEATER WHERE Theater_Id = :Theater_Id";
+                        cmd.Parameters.Add(":Theater_Id", OracleDbType.Int32).Value = TheaterId.Value;
+                        cmd.ExecuteNonQuery();
+                    }
                 }
-                catch
-                {
-                    tran.Rollback();
-                    throw;
-                }
+
+                Response.Redirect("~/Theaters/Theaters.aspx");
             }
-
-            Response.Redirect("~/Theaters/Theaters.aspx");
-        }
-
-        private static void ExecuteDelete(OracleConnection con, OracleTransaction tran, string sql, int theaterId)
-        {
-            using (OracleCommand cmd = con.CreateCommand())
+            catch
             {
-                cmd.Transaction = tran;
-                cmd.BindByName = true;
-                cmd.CommandText = sql;
-                cmd.Parameters.Add(":Theater_Id", OracleDbType.Int32).Value = theaterId;
-                cmd.ExecuteNonQuery();
+                SetMessage("Unable to delete theater.", true);
             }
         }
 
-        private static bool TableExists(OracleConnection con, OracleTransaction tran, string tableName)
+        private void SetMessage(string message, bool isError)
         {
-            using (OracleCommand cmd = con.CreateCommand())
-            {
-                cmd.Transaction = tran;
-                cmd.BindByName = true;
-                cmd.CommandText = "SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME = :Table_Name";
-                cmd.Parameters.Add(":Table_Name", OracleDbType.Varchar2).Value = tableName.ToUpperInvariant();
-                return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
-            }
+            lblMessage.Text = message;
+            lblMessage.Visible = true;
+            lblMessage.CssClass = isError ? "alert alert-error" : "alert alert-success";
         }
     }
 }

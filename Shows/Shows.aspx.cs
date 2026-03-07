@@ -8,6 +8,7 @@ namespace _23049999_Sewanta_Luitel
     public partial class Shows_Shows : Page
     {
         protected GridView GridViewShows;
+        protected Label lblMessage;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -19,56 +20,62 @@ namespace _23049999_Sewanta_Luitel
 
         private void LoadShows()
         {
-            const string query = "SELECT s.Show_Id, m.Movie_Name, h.Hall_Number, s.Show_Name, s.Show_Date, s.Show_Time FROM SHOWS s LEFT JOIN MOVIE m ON s.Movie_Id = m.Movie_Id LEFT JOIN HALL h ON s.Hall_Id = h.Hall_Id ORDER BY s.Show_Id";
-            GridViewShows.DataSource = new DBConnection().ExecuteQuery(query);
-            GridViewShows.DataBind();
+            try
+            {
+                const string query = "SELECT s.Show_Id, m.Movie_Name, h.Hall_Number, s.Show_Name, s.Show_Date, s.Show_Time FROM SHOWS s LEFT JOIN MOVIE m ON s.Movie_Id = m.Movie_Id LEFT JOIN HALL h ON s.Hall_Id = h.Hall_Id ORDER BY s.Show_Id";
+                GridViewShows.DataSource = new DBConnection().ExecuteQuery(query);
+                GridViewShows.DataBind();
+            }
+            catch
+            {
+                SetMessage("Unable to load shows.", true);
+            }
         }
 
         protected void GridViewShows_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
-            int showId = Convert.ToInt32(GridViewShows.DataKeys[e.RowIndex].Value);
-
-            using (OracleConnection con = new DBConnection().GetConnection())
-            using (OracleTransaction tran = con.BeginTransaction())
+            try
             {
-                try
+                int showId = Convert.ToInt32(GridViewShows.DataKeys[e.RowIndex].Value);
+
+                using (OracleConnection con = new DBConnection().GetConnection())
                 {
-                    // Remove child records first to satisfy FK constraints.
-                    ExecuteDelete(con, tran,
-                        "DELETE FROM TICKET WHERE Booking_Id IN (SELECT Booking_Id FROM BOOKING WHERE Show_Id = :Show_Id)",
-                        showId);
+                    using (OracleCommand checkCmd = con.CreateCommand())
+                    {
+                        checkCmd.BindByName = true;
+                        checkCmd.CommandText = "SELECT COUNT(*) FROM BOOKING WHERE Show_Id = :Show_Id";
+                        checkCmd.Parameters.Add(":Show_Id", OracleDbType.Int32).Value = showId;
+                        int dependentCount = Convert.ToInt32(checkCmd.ExecuteScalar());
+                        if (dependentCount > 0)
+                        {
+                            SetMessage("Cannot delete show because related bookings exist.", true);
+                            return;
+                        }
+                    }
 
-                    ExecuteDelete(con, tran,
-                        "DELETE FROM BOOKING WHERE Show_Id = :Show_Id",
-                        showId);
-
-                    ExecuteDelete(con, tran,
-                        "DELETE FROM SHOWS WHERE Show_Id = :Show_Id",
-                        showId);
-
-                    tran.Commit();
+                    using (OracleCommand cmd = con.CreateCommand())
+                    {
+                        cmd.BindByName = true;
+                        cmd.CommandText = "DELETE FROM SHOWS WHERE Show_Id = :Show_Id";
+                        cmd.Parameters.Add(":Show_Id", OracleDbType.Int32).Value = showId;
+                        cmd.ExecuteNonQuery();
+                    }
                 }
-                catch
-                {
-                    tran.Rollback();
-                    throw;
-                }
+
+                SetMessage("Show deleted successfully.", false);
+                LoadShows();
             }
-
-            LoadShows();
+            catch
+            {
+                SetMessage("Unable to delete show.", true);
+            }
         }
 
-        private static void ExecuteDelete(OracleConnection con, OracleTransaction tran, string sql, int showId)
+        private void SetMessage(string message, bool isError)
         {
-            using (OracleCommand cmd = con.CreateCommand())
-            {
-                cmd.Transaction = tran;
-                cmd.BindByName = true;
-                cmd.CommandText = sql;
-                cmd.Parameters.Add(":Show_Id", OracleDbType.Int32).Value = showId;
-                cmd.ExecuteNonQuery();
-            }
+            lblMessage.Text = message;
+            lblMessage.Visible = true;
+            lblMessage.CssClass = isError ? "alert alert-error" : "alert alert-success";
         }
-
     }
 }

@@ -4,12 +4,13 @@
     <main class="form-page">
         <section class="form-card">
             <h2>Show Form</h2>
+            <asp:Label ID="lblMessage" runat="server" Visible="false" />
             <div class="form-grid">
                 <div class="form-group"><label for="ddlMovies">Movie</label><asp:DropDownList ID="ddlMovies" runat="server" CssClass="form-control" /></div>
                 <div class="form-group"><label for="ddlHalls">Hall</label><asp:DropDownList ID="ddlHalls" runat="server" CssClass="form-control" /></div>
                 <div class="form-group"><label for="txtShowName">Show Name</label><asp:TextBox ID="txtShowName" runat="server" CssClass="form-control" /></div>
-                <div class="form-group"><label for="txtShowDate">Show Date</label><asp:TextBox ID="txtShowDate" runat="server" CssClass="form-control" /></div>
-                <div class="form-group field-full"><label for="txtShowTime">Show Time</label><asp:TextBox ID="txtShowTime" runat="server" CssClass="form-control" /></div>
+                <div class="form-group"><label for="txtShowDate">Show Date</label><asp:TextBox ID="txtShowDate" runat="server" CssClass="form-control" TextMode="Date" /></div>
+                <div class="form-group field-full"><label for="txtShowTime">Show Time</label><asp:TextBox ID="txtShowTime" runat="server" CssClass="form-control" TextMode="Time" /></div>
             </div>
             <div class="form-actions">
                 <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-save" OnClick="btnSave_Click" />

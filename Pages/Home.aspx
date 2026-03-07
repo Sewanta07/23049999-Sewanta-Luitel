@@ -3,6 +3,7 @@
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <main class="app-shell">
         <h2>Cinema Dashboard</h2>
+        <asp:Label ID="lblMessage" runat="server" Visible="false" />
         <section class="stats-grid" aria-label="Dashboard Statistics">
             <article class="stat-card users">
                 <div class="stat-icon" aria-hidden="true">
