@@ -86,27 +86,3 @@ CREATE INDEX IX_SHOWS_HALL_ID     ON SHOWS(Hall_Id);
 CREATE INDEX IX_BOOKING_USER_ID   ON BOOKING(User_Id);
 CREATE INDEX IX_BOOKING_SHOW_ID   ON BOOKING(Show_Id);
 CREATE INDEX IX_TICKET_BOOKING_ID ON TICKET(Booking_Id);
-
--- Sample data for quick testing
-INSERT INTO USER_TABLE (User_Id, User_Name, User_Email, User_Address)
-VALUES (1, 'Alex Sharma', 'alex@example.com', 'Kathmandu');
-
-INSERT INTO MOVIE (Movie_Id, Movie_Name, Movie_Release_Date)
-VALUES (1, 'Sample Movie', DATE '2025-01-10');
-
-INSERT INTO THEATER (Theater_Id, Theater_Name, Theater_City)
-VALUES (1, 'City Cinema', 'Kathmandu');
-
-INSERT INTO HALL (Hall_Id, Theater_Id, Hall_Number, Hall_Capacity)
-VALUES (1, 1, 'H1', 120);
-
-INSERT INTO SHOWS (Show_Id, Movie_Id, Hall_Id, Show_Name, Show_Date, Show_Time)
-VALUES (1, 1, 1, 'Evening Show', DATE '2026-03-08', '18:30');
-
-INSERT INTO BOOKING (Booking_Id, User_Id, Show_Id, Booking_Date, Booking_Status)
-VALUES (1, 1, 1, SYSDATE, 'Booked');
-
-INSERT INTO TICKET (Ticket_Id, Booking_Id, Ticket_Price, Seat_Number)
-VALUES (1, 1, 450.00, 'A1');
-
-COMMIT;
