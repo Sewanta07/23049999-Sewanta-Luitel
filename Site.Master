@@ -6,7 +6,7 @@
 <head runat="server">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%: Page.Title %> - Cinema Ticket System</title>
+    <title><%: Page.Title %> - KumariCinemas</title>
 
     <asp:PlaceHolder runat="server">
         <%: Scripts.Render("~/bundles/modernizr") %>
@@ -57,14 +57,14 @@
             <div class="main-wrap">
                 <header class="top-header">
                     <button type="button" id="sidebarToggle" class="toggle-btn" aria-label="Toggle Navigation">Menu</button>
-                    <div class="system-title">Movie Ticket Booking System</div>
+                    <div class="system-title">KumariCinemas</div>
                 </header>
 
                 <main class="content-area">
                     <asp:ContentPlaceHolder ID="MainContent" runat="server">
                     </asp:ContentPlaceHolder>
                     <footer class="footer">
-                        <p>&copy; <%: DateTime.Now.Year %> - Cinema Ticket System</p>
+                        <p>&copy; <%: DateTime.Now.Year %> - KumariCinemas</p>
                     </footer>
                 </main>
                 </div>
