@@ -21,7 +21,8 @@ CREATE TABLE USER_TABLE (
     User_Id        NUMBER(10)     PRIMARY KEY,
     User_Name      VARCHAR2(100)  NOT NULL,
     User_Email     VARCHAR2(150)  NOT NULL,
-    User_Address   VARCHAR2(250)  NOT NULL
+    User_Address   VARCHAR2(250)  NOT NULL,
+    CONSTRAINT UQ_USER_EMAIL UNIQUE (User_Email)
 );
 
 CREATE TABLE MOVIE (
